@@ -3,17 +3,27 @@ from pickle import TRUE
 from PyQt5.QtWidgets import (QApplication, QWidget, QGridLayout, QLabel, QLineEdit, QTextEdit, QMainWindow, QHBoxLayout, QFrame, QMenuBar, QVBoxLayout, QComboBox, QAction, QScrollArea)
 from PyQt5.QtGui import QFont
 from PyQt5 import QtCore
+from torch import AggregationType
 
 from PredefinedGuiElements.gameTile import gameTile
 
 Letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
 
 class Board:
-    def __init__(self, gridLayout):
+    def __init__(self, gridLayout, mainWindow):
         self.Tiles = [[0 for x in range(10)] for y in range(10)] 
+
+        #records main window for function calls
+        self.MainWindow = mainWindow
+
+        #list of boxes that have been captures
+        self.CapturesBoxes = []
 
         #sets up boxes to contain tiles for ease of use
         self.BoxList = [[],[],[],[],[],[],[],[],[]]
+
+        #starts with a starting player
+        self.currentPlayer = 1
 
         #populates the game grid with 100 tiles
         for x in range(10):
@@ -59,40 +69,89 @@ class Board:
             return
 
         #checks if the tile can be played according to sodoku rules
-        if ((not self.CheckRowValidity(y)) or (not self.CheckColumnValidity(x)) or (not self.CheckBoxValidity(x,y))):
+        if ((not self.CheckRowValidity(y, self.selectedNumber)) or (not self.CheckColumnValidity(x, self.selectedNumber)) or (not self.CheckBoxValidity(x,y, self.selectedNumber))):
             return
+
+          
     
         #changes the tile
         self.Tiles[x][y].SetStatic()
         self.Tiles[x][y].SetNumber(self.selectedNumber)
 
-    def CheckRowValidity(self, x):
+        #check if a tile has been captured
+        self.CheckSodokuRule()  
+        
+        #change the current player
+        self.ChangeCurrentPlayer()
+
+    def CheckRowValidity(self, x, checkedNumber):
 
         for j in range(1,10):  #for each tile in the row
             if (self.Tiles[j][x].GetText() != ""):  #if tile has a number on it
-                if self.Tiles[j][x].GetNumber() == self.selectedNumber:  #if tile has the same number as the one trying to place
-                    if (j != x):  #if tile isn't the one we're placing at
-                        return False
+                if self.Tiles[j][x].GetNumber() == checkedNumber:  #if tile has the same number as the one trying to place
+                    return False
 
         return True
 
-    def CheckColumnValidity(self, y):
+    def CheckColumnValidity(self, y, checkedNumber):
         for j in range(0,9):  #for each tile in the col
             if (self.Tiles[y][j].GetText() != ""):  #if tile has a number on it
-                if self.Tiles[y][j].GetNumber() == self.selectedNumber:  #if tile has the same number as the one trying to place
-                    if (y != j):  #if tile isn't the one we're placing at
-                        return False
+                if self.Tiles[y][j].GetNumber() == checkedNumber:  #if tile has the same number as the one trying to place
+                    return False
 
         return True
 
-    def CheckBoxValidity(self, x, y):
+    def CheckBoxValidity(self, x, y, checkedNumber):
         for tile in self.BoxList[self.BoxNumberFromTile(x, y)]:
             if (tile.GetText() != ""):
-                if (tile.GetNumber() == self.selectedNumber):
-                    if ((tile.x != x) and (tile.y != y)):
+                if (tile.GetNumber() == checkedNumber):
+                    if ((tile.x != x) or (tile.y != y)):
                         return False
 
         return True
+
+    def CheckSodokuRule(self):
+        for box in range(9): #for each box
+            if (not (box in self.CapturesBoxes)):  #that has not been captured
+                boxPossible = False
+                for tile in self.BoxList[box]: #for each tile in that box
+                    currentx = tile.x
+                    currenty = tile.y
+
+                    if (tile.static == False):  #if that tile is not static
+                        for i in range(1,10):  #try each number
+                            if (self.CheckRowValidity(currenty, i) and self.CheckColumnValidity(currentx, i) and self.CheckBoxValidity(currentx, currenty, i)):  #and see if it can be placed there
+                                boxPossible = True
+
+                if (boxPossible == False):  #if no possible moves within the box were found
+                    self.CaptureBox(box)
+
+
+
+
+    def CheckTTTWin(self):
+        print("checking win")
+
+    def CaptureBox(self, box):
+        if (self.currentPlayer == 1):
+            self.BoxList[box][0].SetColour("Red")
+            self.BoxList[box][2].SetColour("Red")
+            self.BoxList[box][4].SetColour("Red")
+            self.BoxList[box][6].SetColour("Red")
+            self.BoxList[box][8].SetColour("Red")
+        else:
+            self.BoxList[box][0].SetColour("Blue")
+            self.BoxList[box][1].SetColour("Blue")
+            self.BoxList[box][2].SetColour("Blue")
+            self.BoxList[box][3].SetColour("blue")
+            self.BoxList[box][5].SetColour("blue")
+            self.BoxList[box][6].SetColour("blue")
+            self.BoxList[box][7].SetColour("blue")
+            self.BoxList[box][8].SetColour("blue")
+
+        self.CapturesBoxes.append(box)
+
+
 
     #takes a tile and from its x and y, returns what number box it belongs in (0-8)
     def BoxNumberFromTile(self, x, y): 
@@ -105,3 +164,10 @@ class Board:
 
         return boxNum
 
+    def ChangeCurrentPlayer(self):
+        if (self.currentPlayer == 1):
+            self.currentPlayer = 0
+        else:
+            self.currentPlayer = 1
+
+        self.MainWindow.updateActivePlayerLabel(self.currentPlayer)

@@ -1,6 +1,7 @@
 import sys
 from PyQt5.QtWidgets import (QApplication, QWidget, QGridLayout, QLabel, QLineEdit, QTextEdit, QMainWindow, QHBoxLayout, QFrame, QMenuBar, QVBoxLayout, QComboBox, QAction, QScrollArea)
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont
 
 from PredefinedGuiElements.gameTile import gameTile
 from PredefinedGuiElements.gridNumber import gridNumber
@@ -44,7 +45,7 @@ class MainWindow(QWidget):
 
     def initGameGrid(self):
 
-        self.gameBoard = Board(self.gameGridLayout)
+        self.gameBoard = Board(self.gameGridLayout, self)
 
     def initInterfacing(self):
 
@@ -54,10 +55,15 @@ class MainWindow(QWidget):
         self.interfaceWidget.setLayout(self.interfaceLayout)
         self.gameSeperationLayout.addWidget(self.interfaceWidget, stretch=1)
 
+        self.ActivePlayerLabel = QLabel("It is Player 1's turn (X)")
+        self.ActivePlayerLabel.setAlignment(Qt.AlignCenter)
+        self.ActivePlayerLabel.setFont(QFont("Arial", 20))
+        self.interfaceLayout.addWidget(self.ActivePlayerLabel, stretch=1)
+
         self.numberGridLayout = QGridLayout()
         self.numberGridWidget = QWidget()
         self.numberGridWidget.setLayout(self.numberGridLayout)
-        self.interfaceLayout.addWidget(self.numberGridWidget)
+        self.interfaceLayout.addWidget(self.numberGridWidget,stretch=5)
 
         #adding number widgets
         self.gridNumbers = []
@@ -97,6 +103,12 @@ class MainWindow(QWidget):
         self.gridNumbers[number - 1].SetColour("green")
 
         self.gameBoard.setSelectedNumber(number)
+
+    def updateActivePlayerLabel(self, player):
+        if (player == 1):
+            self.ActivePlayerLabel.setText("It is Player 1's turn (X)")
+        else:
+            self.ActivePlayerLabel.setText("It is Player 2's turn (0)")
 
 
 
