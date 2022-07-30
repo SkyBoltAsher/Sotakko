@@ -179,8 +179,7 @@ class Board:
             msg.exec_()
 
             self.MainWindow.resetBoard()
-
-        if (movecount == (math.pow(3, 2) - 1)):
+        elif (movecount == (math.pow(3, 2) - 1)):
             msg = QMessageBox()
             msg.setWindowTitle("Tic Tac Toe is a stupid fucking game")
             msg.setText("It's actually ridiculous that people above the age of 5 would play such a dumb game. You can always force a draw! Fucking expression of skill right there 'oh ho ho look at me, im so good we will DRAW EVERYTIME'. God. Anyway, this game ended in a draw in case you didn't notice. Fuck me.")
