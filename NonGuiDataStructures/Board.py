@@ -1,4 +1,5 @@
 from math import floor
+import math
 from pickle import TRUE
 from PyQt5.QtWidgets import (QApplication, QWidget, QGridLayout, QLabel, QLineEdit, QTextEdit, QMainWindow, QHBoxLayout, QFrame, QMenuBar, QVBoxLayout, QComboBox, QAction, QScrollArea, QMessageBox)
 from PyQt5.QtGui import QFont
@@ -134,7 +135,10 @@ class Board:
 
 
     def CheckTTTWin(self):
-        littleBoard = [[-1,-1,-1],[-1,-1,-1],[-1,-1,-1]]        
+        littleBoard = [[-1,-1,-1],[-1,-1,-1],[-1,-1,-1]] 
+
+        winner = -1   
+        movecount = 0    
 
         #loads captured boxes into a box for easy analysis
         index = 0
@@ -142,43 +146,45 @@ class Board:
             for y in range(3):
                 for j in range(len(self.CapturesBoxes)):
                     if (index == self.CapturesBoxes[j]):
+                        movecount += 1
                         littleBoard[x][y] = self.CapturingPlayers[j]
 
                 index = index + 1
 
         #check columns for win
-        for x in range(3):
-            if ((littleBoard[x][0] == littleBoard[x][1]) and (littleBoard[x][1] == littleBoard[x][2])):
-                winner = littleBoard[x][0]
+        for k in range(3):
+            if ((littleBoard[k][0] == littleBoard[k][1]) and (littleBoard[k][1] == littleBoard[k][2]) and (littleBoard[k][2] != -1)):
+                winner = littleBoard[k][0]
 
         #check rows
-        for y in range(3):
-            if ((littleBoard[0][x] == littleBoard[1][x]) and (littleBoard[1][x] == littleBoard[2][x])):
-                winner = littleBoard[0][x]
+        for p in range(3):
+            if ((littleBoard[0][p] == littleBoard[1][p]) and (littleBoard[1][p] == littleBoard[2][p]) and (littleBoard[2][p] != -1)):
+                winner = littleBoard[0][p]
 
         #check diagonals
-        if ((littleBoard[0][0] == littleBoard[1][1]) and (littleBoard[1][1] == littleBoard[2][2])):
+        if ((littleBoard[0][0] == littleBoard[1][1]) and (littleBoard[1][1] == littleBoard[2][2]) and (littleBoard[2][2] != -1)):
             winner = littleBoard[0][0]
-        if ((littleBoard[2][0] == littleBoard[1][1]) and (littleBoard[1][1] == littleBoard[0][2])):
+        if ((littleBoard[2][0] == littleBoard[1][1]) and (littleBoard[1][1] == littleBoard[0][2]) and (littleBoard[0][2] != -1)):
             winner = littleBoard[2][0]
-
-
-        print("box:")
-        for j in range(3):
-            for l in range(3):
-                print(littleBoard[j][l], end="")
-            print("")
-
 
         #check if a player won
         if (winner != -1):
-            msg = QMessageBox
+            msg = QMessageBox()
             msg.setWindowTitle("Winner")
             if (winner == 1):
                 msg.setText("Player 1 (X) has won!")
             else:
                 msg.setText("Player 2 (0) has won!")
 
+            msg.exec_()
+
+            self.MainWindow.resetBoard()
+
+        if (movecount == (math.pow(3, 2) - 1)):
+            msg = QMessageBox()
+            msg.setWindowTitle("Tic Tac Toe is a stupid fucking game")
+            msg.setText("It's actually ridiculous that people above the age of 5 would play such a dumb game. You can always force a draw! Fucking expression of skill right there 'oh ho ho look at me, im so good we will DRAW EVERYTIME'. God. Anyway, this game ended in a draw in case you didn't notice. Fuck me.")
+            msg.exec_()
             self.MainWindow.resetBoard()
 
 
