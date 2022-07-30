@@ -1,6 +1,6 @@
 from math import floor
 from pickle import TRUE
-from PyQt5.QtWidgets import (QApplication, QWidget, QGridLayout, QLabel, QLineEdit, QTextEdit, QMainWindow, QHBoxLayout, QFrame, QMenuBar, QVBoxLayout, QComboBox, QAction, QScrollArea)
+from PyQt5.QtWidgets import (QApplication, QWidget, QGridLayout, QLabel, QLineEdit, QTextEdit, QMainWindow, QHBoxLayout, QFrame, QMenuBar, QVBoxLayout, QComboBox, QAction, QScrollArea, QMessageBox)
 from PyQt5.QtGui import QFont
 from PyQt5 import QtCore
 from torch import AggregationType
@@ -16,8 +16,9 @@ class Board:
         #records main window for function calls
         self.MainWindow = mainWindow
 
-        #list of boxes that have been captures
+        #list of boxes that have been captured
         self.CapturesBoxes = []
+        self.CapturingPlayers = []
 
         #sets up boxes to contain tiles for ease of use
         self.BoxList = [[],[],[],[],[],[],[],[],[]]
@@ -80,6 +81,9 @@ class Board:
 
         #check if a tile has been captured
         self.CheckSodokuRule()  
+
+        #check if the game has a winnder
+        self.CheckTTTWin()
         
         #change the current player
         self.ChangeCurrentPlayer()
@@ -130,7 +134,55 @@ class Board:
 
 
     def CheckTTTWin(self):
-        print("checking win")
+        littleBoard = [[-1,-1,-1],[-1,-1,-1],[-1,-1,-1]]        
+
+        #loads captured boxes into a box for easy analysis
+        index = 0
+        for x in range(3):
+            for y in range(3):
+                for j in range(len(self.CapturesBoxes)):
+                    if (index == self.CapturesBoxes[j]):
+                        littleBoard[x][y] = self.CapturingPlayers[j]
+
+                index = index + 1
+
+        #check columns for win
+        for x in range(3):
+            if ((littleBoard[x][0] == littleBoard[x][1]) and (littleBoard[x][1] == littleBoard[x][2])):
+                winner = littleBoard[x][0]
+
+        #check rows
+        for y in range(3):
+            if ((littleBoard[0][x] == littleBoard[1][x]) and (littleBoard[1][x] == littleBoard[2][x])):
+                winner = littleBoard[0][x]
+
+        #check diagonals
+        if ((littleBoard[0][0] == littleBoard[1][1]) and (littleBoard[1][1] == littleBoard[2][2])):
+            winner = littleBoard[0][0]
+        if ((littleBoard[2][0] == littleBoard[1][1]) and (littleBoard[1][1] == littleBoard[0][2])):
+            winner = littleBoard[2][0]
+
+
+        print("box:")
+        for j in range(3):
+            for l in range(3):
+                print(littleBoard[j][l], end="")
+            print("")
+
+
+        #check if a player won
+        if (winner != -1):
+            msg = QMessageBox
+            msg.setWindowTitle("Winner")
+            if (winner == 1):
+                msg.setText("Player 1 (X) has won!")
+            else:
+                msg.setText("Player 2 (0) has won!")
+
+            self.MainWindow.resetBoard()
+
+
+
 
     def CaptureBox(self, box):
         if (self.currentPlayer == 1):
@@ -150,6 +202,7 @@ class Board:
             self.BoxList[box][8].SetColour("blue")
 
         self.CapturesBoxes.append(box)
+        self.CapturingPlayers.append(self.currentPlayer)
 
 
 

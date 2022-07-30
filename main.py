@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import (QApplication, QWidget, QGridLayout, QLabel, QLineEdit, QTextEdit, QMainWindow, QHBoxLayout, QFrame, QMenuBar, QVBoxLayout, QComboBox, QAction, QScrollArea)
+from PyQt5.QtWidgets import (QApplication, QWidget, QGridLayout, QLabel, QLineEdit, QTextEdit, QMainWindow, QHBoxLayout, QFrame, QMenuBar, QVBoxLayout, QComboBox, QAction, QScrollArea, QPushButton)
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 
@@ -95,6 +95,10 @@ class MainWindow(QWidget):
         self.numberGridLayout.addWidget(tile, 2, 2)
         self.gridNumbers.append(tile)
 
+        self.ResetButton = QPushButton("Reset Game")
+        self.interfaceLayout.addWidget(self.ResetButton)
+        self.ResetButton.clicked.connect(self.resetBoard)
+
 
     #updates the boards selected number
     def updateSelectedNumber(self, number):
@@ -109,6 +113,9 @@ class MainWindow(QWidget):
             self.ActivePlayerLabel.setText("It is Player 1's turn (X)")
         else:
             self.ActivePlayerLabel.setText("It is Player 2's turn (0)")
+
+    def resetBoard(self):
+        self.initGameGrid()
 
 
 
